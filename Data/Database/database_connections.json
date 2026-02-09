@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Test Connection",
+    "type": "mssql",
+    "server": "192.168.51.10",
+    "port": "1433",
+    "username": "ebio",
+    "password": "17of1Kr7pOPC",
+    "database": "MaxnetSales_and_Marketing",
+    "status": "disconnected"
+  },
+  {
+    "name": "Test Connection2",
+    "type": "mssql",
+    "server": "192.168.51.10",
+    "port": 1433,
+    "username": "sa",
+    "password": "!QAZ2wsx",
+    "database": "MaxnetSales_and_Marketing",
+    "status": "disconnected"
+  }
+]

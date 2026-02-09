@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BI Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        /* Reset and base styles */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        /* Container optimized for chat app embedding */
+        .dashboard-container { 
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        /* Compact header */
+        .dashboard-header { 
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .dashboard-header h1 { 
+            font-size: 1.6em;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        .dashboard-header p { 
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        /* Compact filter container */
+        .filter-container {
+            padding: 15px 20px;
+            background: rgba(52,152,219,.08);
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .filter-group label {
+            font-weight: 500;
+            color: #2c3e50;
+            margin-bottom: 4px;
+            font-size: 0.8em;
+        }
+        select {
+            padding: 6px 12px;
+            border: 1px solid #bdc3c7;
+            border-radius: 6px;
+            background: white;
+            font-size: 0.8em;
+            min-width: 120px;
+            transition: all 0.2s ease;
+        }
+        select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52,152,219,.3);
+        }
+        
+        /* Responsive metrics grid */
+        .metrics-grid { 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            padding: 20px;
+            background: rgba(248, 249, 250, 0.5);
+        }
+        .metric-card { 
+            background: white;
+            padding: 16px;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            border-left: 4px solid #3498db;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        .metric-card:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .metric-value { 
+            font-size: 1.6em;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #2c3e50;
+            line-height: 1.2;
+        }
+        .metric-label { 
+            color: #666;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+        
+        /* Responsive charts grid */
+        .charts-grid { 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            padding: 20px;
+        }
+        .chart-container { 
+            background: white;
+            padding: 16px;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease;
+            min-height: 300px;
+        }
+        .chart-container:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .chart-title { 
+            font-size: 1em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        /* Chart canvas sizing */
+        .chart-container canvas {
+            max-height: 250px !important;
+        }
+        
+        /* Loader */
+        #loader { 
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            z-index: 1000;
+            width: 40px;
+            height: 40px;
+            margin: -20px 0 0 -20px;
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #3498db;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+        .hidden { display: none; }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .dashboard-header {
+                padding: 15px;
+            }
+            .dashboard-header h1 {
+                font-size: 1.4em;
+            }
+            .filter-container {
+                padding: 12px 15px;
+                gap: 10px;
+            }
+            .metrics-grid {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 10px;
+                padding: 15px;
+            }
+            .metric-card {
+                padding: 12px;
+            }
+            .metric-value {
+                font-size: 1.4em;
+            }
+            .charts-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                padding: 15px;
+            }
+            .chart-container {
+                min-height: 250px;
+            }
+            .chart-container canvas {
+                max-height: 200px !important;
+            }
+        }
+        
+        /* Extra small screens */
+        @media (max-width: 480px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .metric-value {
+                font-size: 1.2em;
+            }
+            .metric-label {
+                font-size: 0.7em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loader"></div>
+    <div id="dashboard" class="dashboard-container hidden">
+        <div class="dashboard-header">
+            <h1 id="dashboardTitle">Loading...</h1>
+            <p id="dashboardSubtitle"></p>
+        </div>
+
+        <div class="filter-container" id="filterContainer"></div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-value" id="kpi1_value">...</div>
+                <div class="metric-label" id="kpi1_label">...</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="kpi2_value">...</div>
+                <div class="metric-label" id="kpi2_label">...</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="kpi3_value">...</div>
+                <div class="metric-label" id="kpi3_label">...</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="kpi4_value">...</div>
+                <div class="metric-label" id="kpi4_label">...</div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title" id="chart1_title">...</div>
+                <canvas id="chart1"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title" id="chart2_title">...</div>
+                <canvas id="chart2"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title" id="chart3_title">...</div>
+                <canvas id="chart3"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title" id="chart4_title">...</div>
+                <canvas id="chart4"></canvas>
+            </div>
+        </div>
+    </div>
+
+<script>
+
+function initializeDashboardWithData(dashboardConfig, rawData) {
+    const loader = document.getElementById('loader');
+    const dashboardContainer = document.getElementById('dashboard');
+    const chartInstances = {};
+    let fullData = rawData;
+    let config = dashboardConfig;
+
+    const generateColors = (num) => {
+        const baseColors = [
+            '#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6',
+            '#1abc9c', '#34495e', '#e67e22', '#95a5a6', '#d35400'
+        ];
+        return Array.from({length: num}, (_, i) => 
+            i < baseColors.length ? baseColors[i] : `hsl(${(i * 137.5) % 360}, 65%, 55%)`
+        );
+    };
+
+    function createFilters() {
+        const filterContainer = document.getElementById('filterContainer');
+        filterContainer.innerHTML = '';
+        if (!config.filters || config.filters.length === 0) {
+            filterContainer.style.display = 'none';
+            return;
+        }
+
+        config.filters.forEach(filter => {
+            if (!filter.column_name || !filter.options) return;
+            const filterGroup = document.createElement('div');
+            filterGroup.className = 'filter-group';
+            const label = document.createElement('label');
+            label.htmlFor = filter.id;
+            label.textContent = filter.label;
+            const select = document.createElement('select');
+            select.id = filter.id;
+            select.add(new Option(`All ${filter.label.split(' ').pop()}`, 'all'));
+            filter.options.forEach(opt => select.add(new Option(opt, opt)));
+            select.addEventListener('change', applyFiltersAndRedraw);
+            filterGroup.appendChild(label);
+            filterGroup.appendChild(select);
+            filterContainer.appendChild(filterGroup);
+        });
+    }
+
+    function applyFiltersAndRedraw() {
+        let filteredData = [...fullData];
+        config.filters?.forEach(filter => {
+            const select = document.getElementById(filter.id);
+            if (!select) return;
+            const selectedValue = select.value;
+            if (selectedValue !== 'all') {
+                filteredData = filteredData.filter(row => String(row[filter.column_name]) === selectedValue);
+            }
+        });
+        updateDashboardUI(filteredData);
+    }
+
+    function updateDashboardUI(data) {
+        document.getElementById('dashboardTitle').textContent = config.header.title;
+        document.getElementById('dashboardSubtitle').textContent = config.header.subtitle;
+
+        // Recalculate and render KPIs based on the currently filtered data
+        config.kpi_cards.forEach((kpi, i) => {
+            const kpiIndex = i + 1;
+            document.getElementById(`kpi${kpiIndex}_label`).textContent = kpi.label;
+            
+            let value = 0;
+            const column = kpi.column_name;
+            const values = data.map(row => row[column]).filter(v => v !== null && v !== undefined);
+
+            switch (kpi.calculation) {
+                case 'SUM':
+                    value = values.reduce((acc, v) => acc + parseFloat(v || 0), 0);
+                    break;
+                case 'AVERAGE':
+                    const sum = values.reduce((acc, v) => acc + parseFloat(v || 0), 0);
+                    value = values.length > 0 ? sum / values.length : 0;
+                    break;
+                case 'COUNT':
+                    value = values.length;
+                    break;
+                case 'COUNT_DISTINCT':
+                    value = new Set(values).size;
+                    break;
+            }
+
+            // Formatting
+            if (kpi.prefix === '$') {
+                value = value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+            } else if (value > 1000) {
+                // Format large numbers more compactly
+                value = (value / 1000).toFixed(1) + 'K';
+            } else {
+                value = value.toLocaleString('en-US');
+            }
+            document.getElementById(`kpi${kpiIndex}_value`).textContent = value;
+        });
+
+        // Render charts based on filtered data
+        config.charts.forEach(chartConfig => {
+            const { chart_id, title, type, data: chartDataConfig } = chartConfig;
+            document.getElementById(`${chart_id}_title`).textContent = title;
+            const ctx = document.getElementById(chart_id).getContext('2d');
+            
+            const aggregatedData = {};
+            data.forEach(row => {
+                const label = row[chartDataConfig.label_column];
+                const value = parseFloat(row[chartDataConfig.value_column] || 0);
+                if (label !== undefined && !isNaN(value)) {
+                    aggregatedData[label] = (aggregatedData[label] || 0) + value;
+                }
+            });
+
+            let sortedData = Object.entries(aggregatedData).sort((a, b) => b[1] - a[1]);
+            if ((type === 'bar' || type === 'doughnut') && sortedData.length > 8) {
+                 sortedData = sortedData.slice(0, 8);
+            } else if (type === 'line') {
+                 sortedData.sort((a,b) => String(a[0]).localeCompare(String(b[0]), undefined, {numeric: true}));
+            }
+            
+            const chartLabels = sortedData.map(item => item[0]);
+            const chartValues = sortedData.map(item => item[1]);
+            const colors = generateColors(chartLabels.length);
+           
+            if (chartInstances[chart_id]) chartInstances[chart_id].destroy();
+
+            chartInstances[chart_id] = new Chart(ctx, {
+                type: type,
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: chartDataConfig.dataset_label,
+                        data: chartValues,
+                        backgroundColor: colors,
+                        borderColor: type === 'line' ? colors[0] || '#3498db' : '#fff',
+                        borderWidth: type === 'doughnut' ? 2 : (type === 'line' ? 2.5 : 1),
+                        fill: false,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { 
+                            display: type === 'doughnut',
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    },
+                    scales: type !== 'doughnut' ? {
+                        y: { 
+                            beginAtZero: true,
+                            ticks: {
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 10
+                                },
+                                maxRotation: 45
+                            }
+                        }
+                    } : {}
+                }
+            });
+        });
+    }
+
+    // Initialize the dashboard with the provided data
+    createFilters();
+    applyFiltersAndRedraw();
+    loader.classList.add('hidden');
+    dashboardContainer.classList.remove('hidden');
+}
+
+</script>
+<script src="/static/js/dashboard.js"></script>
+<script>
+window.addEventListener("message", function (event) {
+    console.log("📩 iframe received message:", event.data);
+
+    if (!event.data || event.data.type !== "dashboardData") {
+        console.log("❌ Invalid or irrelevant message");
+        return;
+    }
+
+    console.log("🔥 initializeDashboardWithData() CALLED with:", event.data);
+    initializeDashboardWithData(event.data.config, event.data.rawData);
+});
+
+</script>
+</body>
+</html>

@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Infographic Preview</title>
+
+  <style>
+
+    /* ---------------- GLOBAL ---------------- */
+    body {
+      font-family: "Inter", system-ui, sans-serif;
+      background: #FAFBFF;
+      color: #1a1a1a;
+      padding: 50px 20px;
+      line-height: 1.55;
+    }
+
+    .infographic-content {
+      max-width: 1050px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* ---------------- HERO TITLE ---------------- */
+    .hero-title {
+      font-size: 3rem;
+      font-weight: 900;
+      letter-spacing: -1px;
+      text-align: center;
+      color: #32325D;
+      margin-bottom: 15px;
+    }
+
+    .hero-subtitle {
+      text-align: center;
+      font-size: 1.2rem;
+      opacity: 0.7;
+      margin-bottom: 50px;
+    }
+
+    .hero-accent {
+      width: 120px;
+      height: 6px;
+      margin: 14px auto 40px;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #6C79FF, #B1B9FF);
+    }
+
+    /* ---------------- TIMELINE FLOW ---------------- */
+    .timeline-line {
+      position: absolute;
+      left: 8px;
+      top: 0;
+      width: 4px;
+      background: linear-gradient(to bottom, #C8D0FF, #6C79FF);
+      height: 100%;
+      border-radius: 4px;
+    }
+
+    .widget-section {
+      padding-left: 55px;
+      margin-bottom: 60px;
+      position: relative;
+    }
+
+    /* Circle markers */
+    .timeline-dot {
+      position: absolute;
+      left: 0;
+      top: 10px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #6C79FF;
+      box-shadow: 0 0 10px rgba(108, 121, 255, 0.5);
+    }
+
+    /* Title */
+    .widget-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #2F3161;
+      margin-bottom: 15px;
+      position: relative;
+    }
+
+    /* Decorative underline */
+    .widget-title:after {
+      content: "";
+      display: block;
+      width: 70px;
+      height: 4px;
+      background: linear-gradient(90deg, #6C79FF, #9FA8FF);
+      border-radius: 3px;
+      margin-top: 6px;
+    }
+
+    /* ---------------- KPI INLINE ---------------- */
+    .kpi-inline {
+      display: flex;
+      gap: 50px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .kpi-inline-item {
+      min-width: 150px;
+    }
+
+    .kpi-inline-value {
+      font-size: 2.4rem;
+      font-weight: 900;
+      color: #5568FE;
+    }
+
+    .kpi-inline-label {
+      font-size: 1rem;
+      opacity: .7;
+      margin-top: -4px;
+    }
+
+    /* ---------------- CLEAN LIST ---------------- */
+    .clean-list {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .clean-list li {
+      margin-bottom: 10px;
+      font-size: 1.05rem;
+    }
+
+    /* ---------------- MODERN TABLE ---------------- */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 0.95rem;
+      background: white;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    table th, table td {
+      padding: 14px;
+      border-bottom: 1px solid #eceefe;
+      text-align: left;
+    }
+
+    table th {
+      background: #F4F5FF;
+      font-weight: 700;
+      color: #2F3161;
+    }
+
+    table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* ---------------- CHARTS ---------------- */
+    canvas {
+      margin-top: 25px;
+      width: 100% !important;
+      height: 360px !important;
+    }
+
+    /* ---------------- DECORATIVE SHAPES ---------------- */
+    .shape-circle {
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: rgba(140,150,255,0.18);
+      top: -60px;
+      right: -60px;
+      z-index: -1;
+    }
+
+    .shape-wave {
+      position: absolute;
+      left: -40px;
+      bottom: -40px;
+      width: 200px;
+      height: 200px;
+      background: rgba(110,120,255,0.12);
+      border-radius: 40%;
+      transform: rotate(25deg);
+      z-index: -1;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <div class="infographic-content">
+
+    <!-- Decorative shapes -->
+    <div class="shape-circle"></div>
+    <div class="shape-wave"></div>
+
+    <!-- Hero Header -->
+    <div class="hero-title">📊 Infographic Report</div>
+    <div class="hero-subtitle">Modern, Clean, Professional Presentation</div>
+    <div class="hero-accent"></div>
+
+    <!-- Vertical Timeline -->
+    <div class="timeline-line"></div>
+
+    {% if infographic_data %}
+      <div id="server-infographic" style="display:none;">{{ infographic_data|tojson }}</div>
+    {% endif %}
+
+    <div id="infographic-root">
+      <p style="text-align:center; opacity:0.6;">No infographic data available.</p>
+    </div>
+
+  </div>
+
+
+  <!-- Chart.js Loader -->
+  <script>
+    function loadScriptOnce(src) {
+      return new Promise((resolve, reject) => {
+        if (document.querySelector('script[src="' + src + '"]')) return resolve();
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = resolve;
+        s.onerror = () => reject("Failed to load " + src);
+        document.head.appendChild(s);
+      });
+    }
+
+    function randomPastelColor() {
+      const r = Math.floor(Math.random() * 127) + 100;
+      const g = Math.floor(Math.random() * 127) + 100;
+      const b = Math.floor(Math.random() * 127) + 100;
+      return `rgba(${r}, ${g}, ${b}, 0.85)`;
+    }
+
+    function widgetTitle(w) {
+      return w.title || w.header || w.label || w.name || '';
+    }
+
+    async function renderInfographicObject(ig) {
+      const root = document.getElementById("infographic-root");
+      root.innerHTML = "";
+
+      if (!ig || !Array.isArray(ig.widgets) || ig.widgets.length === 0) {
+        root.innerHTML = "<p style='text-align:center; opacity:0.6;'>No infographic data available.</p>";
+        return;
+      }
+
+      const needsChart = ig.widgets.some(w => w.chart_config);
+      let chartPromise = needsChart
+        ? loadScriptOnce("https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js")
+        : Promise.resolve();
+
+      ig.widgets.forEach((widget, idx) => {
+        const section = document.createElement("div");
+        section.className = "widget-section";
+
+        const dot = document.createElement("div");
+        dot.className = "timeline-dot";
+        section.appendChild(dot);
+
+        const title = widgetTitle(widget);
+        if (title) {
+          const h = document.createElement("div");
+          h.className = "widget-title";
+          h.textContent = title;
+          section.appendChild(h);
+        }
+
+        const type =
+          widget.type ||
+          widget.widget_type ||
+          (widget.chart_config ? "chart" :
+            Array.isArray(widget.data) ? "summary" : "unknown"
+          );
+
+        /* ---------- FIXED BREAKDOWN DETECTION ---------- */
+        const breakdownItems =
+          widget.data ||
+          widget.items ||
+          widget.breakdown?.items ||
+          widget.breakdown_list?.items ||
+          widget.values ||
+          widget.points ||
+          [];
+
+        /* KPI */
+        if (type === "kpi" || type === "kpi_showcase") {
+          const wrap = document.createElement("div");
+          wrap.className = "kpi-inline";
+          breakdownItems.forEach(it => {
+            wrap.innerHTML += `
+              <div class="kpi-inline-item">
+                <div class="kpi-inline-value">${it.value ?? it.v ?? ""}</div>
+                <div class="kpi-inline-label">${it.label ?? it.name ?? ""}</div>
+              </div>`;
+          });
+          section.appendChild(wrap);
+        }
+
+        /* Summary */
+        else if (type === "summary" || type === "summary_list") {
+          const ul = document.createElement("ul");
+          ul.className = "clean-list";
+          breakdownItems.forEach(p => {
+            ul.innerHTML += `<li>${p.label ?? p}</li>`;
+          });
+          section.appendChild(ul);
+        }
+
+        /* Breakdown */
+        else if (type === "breakdown" || type === "list") {
+          const ul = document.createElement("ul");
+          ul.className = "clean-list";
+
+          breakdownItems.forEach(it => {
+            ul.innerHTML += `<li><strong>${it.label || it.name}:</strong> ${it.value ?? it.v ?? ""}</li>`;
+          });
+
+          section.appendChild(ul);
+        }
+
+        /* Table */
+        else if (type === "table") {
+          let html = "<table><thead><tr>";
+          widget.columns.forEach(c => (html += `<th>${c}</th>`));
+          html += "</tr></thead><tbody>";
+
+          widget.rows.forEach(r => {
+            html += "<tr>";
+            widget.columns.forEach(c => (html += `<td>${r[c] ?? ""}</td>`));
+            html += "</tr>";
+          });
+
+          html += "</tbody></table>";
+          section.innerHTML += html;
+        }
+
+        /* ---------- CHARTS WITH FIXED LABELS, COLORS & LEGEND ---------- */
+        else if (type === "chart") {
+          const dataArr = widget.data || widget.chart_data || breakdownItems || [];
+
+          if (Array.isArray(dataArr) && !widget.chart_config?.data?.labels) {
+            const labels = dataArr.map(i => i.label || i.name || "Item");
+            const values = dataArr.map(i => Number(i.value ?? i.v ?? 0));
+            const colors = dataArr.map(() => randomPastelColor());
+
+            widget.chart_config = {
+              type: widget.chart_config?.type || "bar",
+              data: {
+                labels: labels,
+                datasets: [{
+                  label: widget.title || "Data",
+                  data: values,
+                  backgroundColor: colors
+                }]
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: { display: true, position: "bottom" }
+                }
+              }
+            };
+          }
+
+          const canvas = document.createElement("canvas");
+          const id = "chart_" + idx + "_" + Math.random().toString(36).slice(2);
+          canvas.id = id;
+          section.appendChild(canvas);
+
+          chartPromise.then(() => {
+            const ctx = canvas.getContext("2d");
+            new Chart(ctx, widget.chart_config);
+          });
+        }
+
+        root.appendChild(section);
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const serverDiv = document.getElementById("server-infographic");
+      if (serverDiv && serverDiv.textContent) {
+        renderInfographicObject(JSON.parse(serverDiv.textContent));
+      }
+    });
+
+    window.addEventListener("message", ev => {
+      if (ev.data?.type === "infographic" || ev.data?.type === "infographicData") {
+        renderInfographicObject(ev.data.infographic || ev.data.data || ev.data);
+      }
+    });
+  </script>
+
+</body>
+</html>

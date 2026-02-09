@@ -1,0 +1,582 @@
+<!-- Create Agent Modal -->
+<div class="modal fade" id="createAgentModal" tabindex="-1">
+    <div class="modal-dialog modal-fullscreen">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createAgentModalTitle">Create BI Agent</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createAgentForm">
+                    <div class="mb-3">
+                        <label class="form-label">Agent Name *</label>
+                        <input type="text" class="form-control" id="agentName" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Agent Description *</label>
+                        <textarea class="form-control" id="agentDescription" rows="3"
+                            placeholder="Describe what this agent does, its context, and its purpose..."
+                            required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Database Connection *</label>
+                        <select class="form-select" id="agentConnections" required>
+                            <option value="">Select a database connection</option>
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                        <small class="form-text text-muted">Choose a configured database connection</small>
+                    </div>
+
+                    <!-- Schema Selection Section -->
+                    <div id="schemaSelection" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label">Select Tables & Columns</label>
+                            <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                                <div id="schemaTables">
+                                    <!-- Tables and columns will be populated here -->
+                                </div>
+                            </div>
+                            <small class="form-text text-muted">Select tables and specific columns to include in the
+                                agent's context</small>
+                        </div>
+
+                        <!-- Schema Context Field -->
+                        <!-- Enhanced Schema Context Section -->
+                        <div class="mb-3">
+                            <label class="form-label">Schema Context (AI-Generated)</label>
+                            <div class="input-group">
+                                <textarea class="form-control" id="schemaContext" rows="6"
+                                    placeholder="AI will analyze your database structure and sample data to generate meaningful context..."></textarea>
+                                <button type="button" class="btn btn-outline-primary" id="generateSchemaBtn" disabled>
+                                    <i class="fas fa-robot me-1"></i>AI Analyze Schema
+                                </button>
+                            </div>
+                            <div class="form-text">
+                                <small>
+                                    🤖 AI will analyze table structures, sample data, and infer business context to
+                                    improve natural language understanding.
+                                    <br>
+                                    <strong>What it does:</strong> Examines column types, sample values, table names,
+                                    and infers relationships and business purposes.
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Table Preview -->
+                        <div class="mb-3">
+                            <label class="form-label">Data Preview</label>
+                            <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
+                                <table class="table table-sm table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Table</th>
+                                            <th>Columns Selected</th>
+                                            <th>Sample Rows</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="previewBody">
+                                        <tr>
+                                            <td colspan="3" class="text-center text-muted">
+                                                <small>Select tables and columns to see preview</small>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="createAgentBtn" disabled>Create Agent</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Database Connection Modal -->
+<div class="modal fade" id="createConnectionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Database Connection</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createConnectionForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Connection Name *</label>
+                                <input type="text" class="form-control" id="connectionName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Database Type *</label>
+                                <select class="form-select" id="dbType" required>
+                                    <option value="">Select database type</option>
+                                    <option value="postgresql">PostgreSQL</option>
+                                    <option value="mysql">MySQL</option>
+                                    <option value="sqlite">SQLite</option>
+                                    <option value="mssql">SQL Server</option>
+                                    <option value="oracle">Oracle</option>
+                                    <option value="mongodb">MongoDB</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label class="form-label">Server/Host *</label>
+                                <input type="text" class="form-control" id="server" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Port</label>
+                                <input type="number" class="form-control" id="port" placeholder="Default based on type">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Database Name *</label>
+                        <input type="text" class="form-control" id="dbName" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Username *</label>
+                                <input type="text" class="form-control" id="username" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Password *</label>
+                                <input type="password" class="form-control" id="password" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Custom Python Packages (Optional)</label>
+                        <textarea class="form-control" id="customPackages" rows="3"
+                            placeholder="Enter custom Python packages for complex integrations, one per line"></textarea>
+                        <small class="form-text text-muted">For example: sqlalchemy-redshift, cx_Oracle</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-primary" id="testConnectionBtn">
+                    <i class="fas fa-vial me-1"></i>Test Connection
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="createConnectionBtn">Create Connection</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Document Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload Documents</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Select Files</label>
+                    <input type="file" class="form-control" id="uploadFiles" multiple
+                        accept=".pdf,.doc,.docx,.xls,.xlsx">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Category (Optional)</label>
+                    <select class="form-select" id="documentCategory">
+                        <option value="">Select category</option>
+                        <option value="financial">Financial Reports</option>
+                        <option value="customer">Customer Data</option>
+                        <option value="market">Market Research</option>
+                        <option value="operational">Operational Data</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Description (Optional)</label>
+                    <textarea class="form-control" id="documentDescription" rows="3"
+                        placeholder="Brief description of the documents"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="uploadDocumentsBtn">Upload</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chat Interface Modal for BI Agents -->
+<div class="modal fade" id="chatModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width:900px; width:95vw; margin:1.75rem auto;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="chatModalTitle">Chat with Agent</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="max-height:80vh; min-height:300px; overflow-y:auto; display:flex; flex-direction:column;">
+                <!-- CHAT WINDOW -->
+                <div class="chat-container flex-grow-1"
+                    style="
+                        min-height:250px;
+                        max-height:60vh;
+                        overflow-y:auto;
+                        border:1px solid #dee2e6;
+                        border-radius:8px;
+                        padding:1rem;
+                        background:white;
+                    ">
+                    <div id="chatMessages">
+                        <div class="alert alert-info">
+                            <small>Ask natural language questions about your data.</small>
+                        </div>
+                    </div>
+                </div>
+                <!-- INPUT + BUTTONS -->
+                <div class="input-group mt-3">
+                    <button class="btn btn-outline-secondary" type="button" id="speechBtn">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary" type="button" id="webSearchBtn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <input type="text" class="form-control" id="chatInput"
+                        placeholder="Ask a question about your data...">
+                    <!-- Tools dropdown -->
+                    <div class="input-group-append dropup">
+                        <button class="btn btn-outline-secondary dropdown-toggle"
+                                type="button"
+                                id="modalToolsDropdown"
+                                data-bs-toggle="dropdown">
+                            <i class="fas fa-tools"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" data-action="generate-infographic">
+                                <i class="fas fa-chart-pie me-2"></i>Generate Infographic
+                            </a></li>
+                            <li><a class="dropdown-item" data-action="generate-dashboard">
+                                <i class="fas fa-tachometer-alt me-2"></i>Generate Dashboard
+                            </a></li>
+                            <li><a class="dropdown-item" data-action="generate-report">
+                                <i class="fas fa-file-alt me-2"></i>Generate Report
+                            </a></li>
+                        </ul>
+                        <button class="btn btn-primary" id="sendChatMessageBtn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+                <small id="speechTranscript" class="text-muted mt-1"></small>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button class="btn btn-outline-danger" id="clearChatBtn">
+                    <i class="fas fa-trash"></i> Clear Chat
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="dashboardPreviewModal" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Dashboard Preview</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="dashboardPreviewBody">
+        <!-- dashboard HTML will be inserted here -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Back</button>
+        <button class="btn btn-primary" onclick="downloadDashboardPDF()">Download PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="reportPreviewModal" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Report Preview</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="reportPreviewBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Back</button>
+        <button class="btn btn-primary" onclick="downloadReportPDF()">Download PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="infographicPreviewModal" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Infographic Preview</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="infographicPreviewBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Back</button>
+        <button class="btn btn-primary" onclick="downloadInfographicPDF()">Download PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+
+<script>
+
+// 🎯 Attach click event listeners to all dropdown-item buttons
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', async (e) => {
+            const action = e.target.dataset.action;
+
+            if (action === "generate-dashboard") {
+                generateDashboard();
+            } 
+            else if (action === "generate-report") {
+                generateReport();
+            } 
+            else if (action === "generate-infographic") {
+                generateInfographic();
+            }
+        });
+    });
+});
+
+// ==========================
+//  DASHBOARD GENERATE
+// ==========================
+async function generateDashboard() {
+    const lastResult = window.agentManager?.lastQueryResult;
+    if (!lastResult || !lastResult.data || lastResult.data.length === 0) {
+        alert("Please ask a question first.");
+        return;
+    }
+
+    const res = await fetch('/api/bi-agents/generate-dashboard', {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ rows: lastResult.data })
+    });
+
+    const data = await res.json();
+
+    // Load preview inside iframe
+    const iframe = document.createElement("iframe");
+    iframe.src = "/preview/dashboard";
+    iframe.style.width = "100%";
+    iframe.style.height = "800px";
+
+    const container = document.getElementById("dashboardPreviewBody");
+    container.innerHTML = "";
+    container.appendChild(iframe);
+
+    // Wait for iframe to load
+    iframe.onload = function () {
+        iframe.contentWindow.postMessage({
+            type: "dashboardData",
+            config: data.dashboard_config,
+            rawData: data.raw_data
+        }, "*");
+    };
+
+    new bootstrap.Modal(document.getElementById("dashboardPreviewModal")).show();
+}
+
+// ==========================
+//  REPORT GENERATE
+// ==========================
+// ==========================
+//  REPORT GENERATE (FIXED)
+// ==========================
+async function generateReport() {
+    const lastResult = window.agentManager?.lastQueryResult;
+    if (!lastResult || !lastResult.data) {
+        alert("Please ask a question first.");
+        return;
+    }
+
+    const res = await fetch('/api/bi-agents/generate-report', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rows: lastResult.data })
+    });
+
+    const data = await res.json();
+
+    // CREATE IFRAME
+    const iframe = document.createElement("iframe");
+    iframe.src = "/preview/report";
+    iframe.style.width = "100%";
+    iframe.style.height = "800px";
+
+    const container = document.getElementById("reportPreviewBody");
+    container.innerHTML = "";
+    container.appendChild(iframe);
+
+    // *** ABSOLUTE FIX — SEND DATA AFTER IFRAME LOADS ***
+    iframe.onload = function () {
+        console.log("📄 Sending report data to iframe:", data);
+
+        console.log("📄 Normalizing report data...");
+
+    let columns = [];
+    let rows = [];
+
+    // ALWAYS use raw_data for rows — it's the only guaranteed clean source
+    rows = data.raw_data || [];
+
+    // SAFE fallback for columns
+    if (rows.length > 0) {
+        columns = Object.keys(rows[0]);   // BEST and most stable method
+    } else {
+        // last fallback — empty table
+        columns = [];
+    }
+
+    iframe.contentWindow.postMessage({
+        type: "reportData",
+        config: data.report_config.header || {},
+        columns: columns,
+        rows: rows
+    }, "*");
+
+
+    };
+
+    new bootstrap.Modal(document.getElementById("reportPreviewModal")).show();
+}
+
+
+// ==========================
+//  INFOGRAPHIC GENERATE (FIXED)
+// ==========================
+async function generateInfographic() {
+    const lastResult = window.agentManager?.lastQueryResult;
+
+    if (!lastResult || !lastResult.insights || lastResult.insights.length === 0) {
+        alert("No summary available.");
+        return;
+    }
+
+    // Call backend
+    const res = await fetch('/api/bi-agents/generate-infographic', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+        summary: lastResult.insights.map(i => i.message),
+        rows: lastResult.data  // <-- ADD THIS
+    })
+
+    });
+
+    const data = await res.json();
+
+    // Load iframe
+    const container = document.getElementById("infographicPreviewBody");
+    container.innerHTML = `
+        <iframe id="infographicIframe" src="/preview/infographic"
+                style="width:100%; height:800px; border:none;"></iframe>
+    `;
+
+    const iframe = document.getElementById("infographicIframe");
+
+    iframe.onload = () => {
+        console.log("📤 Sending infographic data to iframe:", data.infographic);
+
+        iframe.contentWindow.postMessage({
+            type: "infographicData",
+            infographic: data.infographic
+        }, "*");
+    };
+
+    new bootstrap.Modal(document.getElementById("infographicPreviewModal")).show();
+}
+
+
+async function downloadDashboardPDF() {
+    const iframe = document.querySelector("#dashboardPreviewBody iframe");
+    if (!iframe) {
+        alert("Dashboard preview not loaded.");
+        return;
+    }
+
+    const dashboardDoc = iframe.contentDocument || iframe.contentWindow.document;
+    const dashboardElement = dashboardDoc.getElementById("dashboard");
+
+    if (!dashboardElement) {
+        alert("No dashboard found to print.");
+        return;
+    }
+
+    const canvas = await html2canvas(dashboardElement);
+    const imgData = canvas.toDataURL("image/png");
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const imgWidth = pageWidth;
+    const imgHeight = canvas.height * (pageWidth / canvas.width);
+
+    pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+    pdf.save("dashboard.pdf");
+}
+
+async function downloadReportPDF() {
+    const iframe = document.querySelector("#reportPreviewBody iframe");
+    if (!iframe) return alert("Report preview not loaded.");
+
+    const reportDoc = iframe.contentDocument || iframe.contentWindow.document;
+    const reportElement = reportDoc.querySelector(".report-container");
+
+    if (!reportElement) {
+        alert("Report content missing");
+        return;
+    }
+
+    const canvas = await html2canvas(reportElement);
+    const imgData = canvas.toDataURL("image/png");
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const imgWidth = pageWidth;
+    const imgHeight = canvas.height * (pageWidth / canvas.width);
+
+    pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+    pdf.save("report_downloaded.pdf");
+}
+
+</script>
+{% endblock %}

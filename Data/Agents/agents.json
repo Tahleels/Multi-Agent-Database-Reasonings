@@ -1,0 +1,1557 @@
+[
+  {
+    "name": "Order Life Cycle Data",
+    "description": "You are an order life cycle data assistant who responds to users NLQ queries and also analyzes data and gives summary and insights.",
+    "database_connection": "Test Connection",
+    "selected_tables": [
+      "inventory",
+      "order_cancellations",
+      "order_items",
+      "orders",
+      "payments",
+      "products",
+      "suppliers",
+      "supplier_sla_breaches"
+    ],
+    "selected_columns": {
+      "inventory": [
+        "id",
+        "product_id",
+        "quantity_on_hand",
+        "quantity_reserved",
+        "reorder_level",
+        "quantity_available",
+        "warehouse_location",
+        "last_updated"
+      ],
+      "order_cancellations": [
+        "id",
+        "order_id",
+        "cancellation_reason",
+        "detailed_reason",
+        "cancelled_by",
+        "cancellation_date",
+        "revenue_loss",
+        "refund_amount",
+        "restocking_cost",
+        "supplier_id",
+        "product_id"
+      ],
+      "order_items": [
+        "id",
+        "order_id",
+        "product_id",
+        "quantity",
+        "price",
+        "total"
+      ],
+      "orders": [
+        "id",
+        "order_number",
+        "customer_id",
+        "order_date",
+        "status",
+        "payment_status",
+        "total_amount",
+        "notes"
+      ],
+      "payments": [
+        "id",
+        "order_id",
+        "amount",
+        "payment_method",
+        "payment_date",
+        "transaction_id",
+        "status"
+      ],
+      "products": [
+        "id",
+        "name",
+        "sku",
+        "description",
+        "price",
+        "cost",
+        "category",
+        "created_at"
+      ],
+      "supplier_sla_breaches": [
+        "id",
+        "supplier_id",
+        "breach_type",
+        "breach_date",
+        "expected_delivery_date",
+        "actual_delivery_date",
+        "delay_days",
+        "expected_quality",
+        "actual_quality",
+        "defect_percentage",
+        "penalty_amount",
+        "business_impact_cost",
+        "description",
+        "resolution_status",
+        "resolution_date",
+        "affected_orders",
+        "affected_products"
+      ],
+      "suppliers": [
+        "id",
+        "name",
+        "contact_person",
+        "email",
+        "phone",
+        "address",
+        "created_at",
+        "sla_delivery_days",
+        "sla_quality_rating",
+        "performance_rating"
+      ]
+    },
+    "schema_context": {
+      "ai_analysis": "1. BUSINESS DOMAIN:\n   - The database likely serves a business in the e-commerce or retail industry based on tables related to inventory, orders, payments, products, suppliers, and order cancellations.\n   \n2. DATA RELATIONSHIPS:\n   - The tables are likely related as follows:\n     - `inventory` is related to `products` through the `product_id`.\n     - `order_cancellations` is related to `orders` through `order_id` and `products` through `product_id`.\n     - `order_items` is related to `orders` through `order_id` and `products` through `product_id`.\n     - `orders` is related to `customers` through `customer_id`.\n     - `payments` is related to `orders` through `order_id`.\n     - `products` is related to `suppliers` through `supplier_id`.\n     - `supplier_sla_breaches` is related to `suppliers` through `supplier_id`.\n\n3. KEY BUSINESS METRICS:\n   - Key metrics that could be calculated include:\n     - Inventory metrics such as quantity on hand, reserved, available, and reorder levels.\n     - Financial metrics like revenue loss, refund amount, restocking cost, total amount, and payment amounts.\n     - Supplier performance metrics like SLA delivery days, quality ratings, and penalty amounts.\n   \n4. COMMON BUSINESS QUESTIONS:\n   - What is the current inventory status for each product?\n   - How many orders were cancelled and what was the revenue loss?\n   - What are the top-selling products and their total sales?\n   - How are payments distributed across different payment methods?\n   - How well are suppliers meeting their SLA delivery days and quality ratings?\n\n5. DATA INSIGHTS:\n   - The database captures a wide range of data related to inventory management, order processing, payments, product details, supplier information, and supplier performance.\n   - The use of temporal tracking columns like `last_updated`, `cancellation_date`, `payment_date`, `created_at`, and various `date` columns indicates a focus on tracking changes over time.\n   - The presence of detailed columns like `detailed_reason`, `notes`, `description`, and `affected_orders` suggests a need for capturing additional context or information related to specific events or entities.\n   - The database structure allows for analyzing relationships between orders, products, suppliers, and payments to gain insights into operational efficiency, customer behavior, and supplier performance.",
+      "business_context": "",
+      "database_type": "mssql",
+      "generated_at": "2025-10-01T10:36:55.655231",
+      "relationships": [],
+      "tables": [
+        {
+          "columns": [
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "id",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "product_id",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "product_id",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "quantity_on_hand",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "quantity_reserved",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "quantity_available",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "reorder_level",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "warehouse_location",
+              "sample_values": [],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Date information",
+              "name": "last_updated",
+              "sample_values": [],
+              "type": "datetime2"
+            }
+          ],
+          "description": "Table inventory with id as identifier and columns like quantity_on_hand, quantity_reserved, quantity_available",
+          "estimated_purpose": "Data relationships, Temporal tracking",
+          "sample_row_count": 0,
+          "table_name": "inventory"
+        },
+        {
+          "columns": [
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "id",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "order_id",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "cancellation_reason",
+              "sample_values": [],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "detailed_reason",
+              "sample_values": [],
+              "type": "ntext(1073741823)"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "cancelled_by",
+              "sample_values": [],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Date information",
+              "name": "cancellation_date",
+              "sample_values": [],
+              "type": "datetime2"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "revenue_loss",
+              "sample_values": [],
+              "type": "float"
+            },
+            {
+              "inferred_purpose": "Numerical quantity",
+              "name": "refund_amount",
+              "sample_values": [],
+              "type": "float"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "restocking_cost",
+              "sample_values": [],
+              "type": "float"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "supplier_id",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "product_id",
+              "sample_values": [],
+              "type": "int"
+            }
+          ],
+          "description": "Table order_cancellations with id as identifier and columns like cancellation_reason, detailed_reason, cancelled_by",
+          "estimated_purpose": "Data relationships, Temporal tracking",
+          "sample_row_count": 0,
+          "table_name": "order_cancellations"
+        },
+        {
+          "columns": [
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "id",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "order_id",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "product_id",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "quantity",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Monetary value",
+              "name": "price",
+              "sample_values": [],
+              "type": "float"
+            },
+            {
+              "inferred_purpose": "Total amount",
+              "name": "total",
+              "sample_values": [],
+              "type": "float"
+            }
+          ],
+          "description": "Table order_items with id as identifier and columns like quantity, price, total",
+          "estimated_purpose": "Data relationships, Financial data",
+          "sample_row_count": 0,
+          "table_name": "order_items"
+        },
+        {
+          "columns": [
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "id",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "order_number",
+              "sample_values": [],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "customer_id",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Date information",
+              "name": "order_date",
+              "sample_values": [],
+              "type": "datetime2"
+            },
+            {
+              "inferred_purpose": "Status indicator",
+              "name": "status",
+              "sample_values": [],
+              "type": "nvarchar(20)"
+            },
+            {
+              "inferred_purpose": "Status indicator",
+              "name": "payment_status",
+              "sample_values": [],
+              "type": "nvarchar(20)"
+            },
+            {
+              "inferred_purpose": "Numerical quantity",
+              "name": "total_amount",
+              "sample_values": [],
+              "type": "float"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "notes",
+              "sample_values": [],
+              "type": "ntext(1073741823)"
+            }
+          ],
+          "description": "Table orders with id as identifier and columns like order_number, order_date, status",
+          "estimated_purpose": "Classification, Data relationships, Temporal tracking",
+          "sample_row_count": 0,
+          "table_name": "orders"
+        },
+        {
+          "columns": [
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "id",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "order_id",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Numerical quantity",
+              "name": "amount",
+              "sample_values": [],
+              "type": "float"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "payment_method",
+              "sample_values": [],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Date information",
+              "name": "payment_date",
+              "sample_values": [],
+              "type": "datetime2"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "transaction_id",
+              "sample_values": [],
+              "type": "nvarchar(100)"
+            },
+            {
+              "inferred_purpose": "Status indicator",
+              "name": "status",
+              "sample_values": [],
+              "type": "nvarchar(20)"
+            }
+          ],
+          "description": "Table payments with id as identifier and columns like amount, payment_method, payment_date",
+          "estimated_purpose": "Classification, Data relationships, Temporal tracking",
+          "sample_row_count": 0,
+          "table_name": "payments"
+        },
+        {
+          "columns": [
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "id",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Name or title",
+              "name": "name",
+              "sample_values": [],
+              "type": "nvarchar(500)"
+            },
+            {
+              "inferred_purpose": "Name or title",
+              "name": "name",
+              "sample_values": [],
+              "type": "nvarchar(100)"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "sku",
+              "sample_values": [],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Category classification",
+              "name": "category",
+              "sample_values": [],
+              "type": "nvarchar(500)"
+            },
+            {
+              "inferred_purpose": "Monetary value",
+              "name": "price",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Description or details",
+              "name": "description",
+              "sample_values": [],
+              "type": "ntext(1073741823)"
+            },
+            {
+              "inferred_purpose": "Monetary value",
+              "name": "price",
+              "sample_values": [],
+              "type": "float"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "cost",
+              "sample_values": [],
+              "type": "float"
+            },
+            {
+              "inferred_purpose": "Category classification",
+              "name": "category",
+              "sample_values": [],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Creation timestamp",
+              "name": "created_at",
+              "sample_values": [],
+              "type": "datetime2"
+            }
+          ],
+          "description": "Table products with id as identifier and columns like name, name, sku",
+          "estimated_purpose": "Classification, Data relationships, Financial data, Temporal tracking",
+          "sample_row_count": 0,
+          "table_name": "products"
+        },
+        {
+          "columns": [
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "id",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Name or title",
+              "name": "name",
+              "sample_values": [],
+              "type": "nvarchar(100)"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "contact_person",
+              "sample_values": [],
+              "type": "nvarchar(100)"
+            },
+            {
+              "inferred_purpose": "Email address",
+              "name": "email",
+              "sample_values": [],
+              "type": "nvarchar(120)"
+            },
+            {
+              "inferred_purpose": "Phone number",
+              "name": "phone",
+              "sample_values": [],
+              "type": "nvarchar(20)"
+            },
+            {
+              "inferred_purpose": "Physical address",
+              "name": "address",
+              "sample_values": [],
+              "type": "ntext(1073741823)"
+            },
+            {
+              "inferred_purpose": "Creation timestamp",
+              "name": "created_at",
+              "sample_values": [],
+              "type": "datetime2"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "sla_delivery_days",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "sla_quality_rating",
+              "sample_values": [],
+              "type": "float"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "performance_rating",
+              "sample_values": [],
+              "type": "float"
+            }
+          ],
+          "description": "Table suppliers with id as identifier and columns like name, contact_person, email",
+          "estimated_purpose": "Contact information, Data relationships, Temporal tracking",
+          "sample_row_count": 0,
+          "table_name": "suppliers"
+        },
+        {
+          "columns": [
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "id",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "supplier_id",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Classification type",
+              "name": "breach_type",
+              "sample_values": [],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Date information",
+              "name": "breach_date",
+              "sample_values": [],
+              "type": "datetime2"
+            },
+            {
+              "inferred_purpose": "Date information",
+              "name": "expected_delivery_date",
+              "sample_values": [],
+              "type": "datetime2"
+            },
+            {
+              "inferred_purpose": "Date information",
+              "name": "actual_delivery_date",
+              "sample_values": [],
+              "type": "datetime2"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "delay_days",
+              "sample_values": [],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "expected_quality",
+              "sample_values": [],
+              "type": "float"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "actual_quality",
+              "sample_values": [],
+              "type": "float"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "defect_percentage",
+              "sample_values": [],
+              "type": "float"
+            },
+            {
+              "inferred_purpose": "Numerical quantity",
+              "name": "penalty_amount",
+              "sample_values": [],
+              "type": "float"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "business_impact_cost",
+              "sample_values": [],
+              "type": "float"
+            },
+            {
+              "inferred_purpose": "Description or details",
+              "name": "description",
+              "sample_values": [],
+              "type": "ntext(1073741823)"
+            },
+            {
+              "inferred_purpose": "Status indicator",
+              "name": "resolution_status",
+              "sample_values": [],
+              "type": "nvarchar(20)"
+            },
+            {
+              "inferred_purpose": "Date information",
+              "name": "resolution_date",
+              "sample_values": [],
+              "type": "datetime2"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "affected_orders",
+              "sample_values": [],
+              "type": "ntext(1073741823)"
+            },
+            {
+              "inferred_purpose": "No sample data available",
+              "name": "affected_products",
+              "sample_values": [],
+              "type": "ntext(1073741823)"
+            }
+          ],
+          "description": "Table supplier_sla_breaches with id as identifier and columns like breach_type, breach_date, expected_delivery_date",
+          "estimated_purpose": "Classification, Data relationships, Temporal tracking",
+          "sample_row_count": 0,
+          "table_name": "supplier_sla_breaches"
+        }
+      ]
+    },
+    "created_at": "2025-10-01T14:37:24.696Z"
+  },
+  {
+    "name": "Tory Analytics",
+    "description": "You are an Retail Analytics data assistant who responds to users NLQ queries and also analyzes data and gives summary and insights.",
+    "database_connection": "Test Connection2",
+    "selected_tables": [
+      "TS.calendar_master",
+      "TS.cost_of_products",
+      "TS.employee_data",
+      "TS.Inventory",
+      "TS.location_master",
+      "TS.plan_sales_data",
+      "TS.price_of_goods",
+      "TS.product_master",
+      "TS.sales",
+      "TS.store_traffic"
+    ],
+    "selected_columns": {
+      "TS.calendar_master": [
+        "date",
+        "gregorian_week",
+        "gregorian_month",
+        "gregorian_year",
+        "day_of_week",
+        "fiscal_week",
+        "fiscal_month",
+        "fiscal_year",
+        "is_holiday",
+        "holiday_name",
+        "is_weekend"
+      ],
+      "TS.cost_of_products": [
+        "product_id",
+        "cost_price",
+        "supplier_name",
+        "last_updated_date"
+      ],
+      "TS.employee_data": [
+        "employee_id",
+        "employee_name",
+        "store_id",
+        "role",
+        "monthly_sales_target",
+        "hire_date"
+      ],
+      "TS.Inventory": [
+        "inventory_id",
+        "product_id",
+        "store_id",
+        "current_stock",
+        "restock_date",
+        "min_stock_threshold",
+        "max_stock_threshold",
+        "last_updated_date"
+      ],
+      "TS.location_master": [
+        "store_id",
+        "store_name",
+        "address",
+        "city",
+        "state",
+        "country",
+        "opening_hours"
+      ],
+      "TS.plan_sales_data": [
+        "plan_id",
+        "product_id",
+        "store_id",
+        "planned_sales_amount",
+        "planned_quantity",
+        "period",
+        "fiscal_period"
+      ],
+      "TS.price_of_goods": [
+        "product_id",
+        "selling_price",
+        "discount_percentage",
+        "effective_from_date",
+        "effective_to_date"
+      ],
+      "TS.product_master": [
+        "product_id",
+        "product_name",
+        "category",
+        "subcategory",
+        "size",
+        "color",
+        "description"
+      ],
+      "TS.sales": [
+        "sale_id",
+        "transaction_id",
+        "product_id",
+        "store_id",
+        "employee_id",
+        "quantity_sold",
+        "sale_date",
+        "sale_time",
+        "unit_price_at_sale",
+        "total_revenue"
+      ],
+      "TS.store_traffic": [
+        "traffic_id",
+        "store_id",
+        "visit_date",
+        "foot_traffic_count",
+        "conversion_rate"
+      ]
+    },
+    "schema_context": {
+      "ai_analysis": "Based on the database schema and sample data provided, here is the analysis:\n\n1. BUSINESS DOMAIN:\n   This database likely serves a retail business domain. The tables and columns indicate a focus on managing various aspects of a retail operation, including sales, inventory, product pricing, employee data, store locations, and sales planning.\n\n2. DATA RELATIONSHIPS:\n   - The `sales` table is likely related to the `product_master` table through the `product_id` column, indicating which products were sold.\n   - The `sales` table is related to the `store_traffic` table through the `store_id` column, showing the foot traffic and conversion rates at different stores.\n   - The `product_master` table is related to the `cost_of_products` and `price_of_goods` tables through the `product_id` column, providing cost and pricing information for products.\n   - The `employee_data` table is related to the `sales` table through the `employee_id` column, linking employees to sales transactions.\n\n3. KEY BUSINESS METRICS:\n   - Total revenue from sales transactions.\n   - Foot traffic count and conversion rate for each store.\n   - Cost price and selling price of products.\n   - Monthly sales targets for employees.\n   - Current stock levels and restock dates for inventory management.\n\n4. COMMON BUSINESS QUESTIONS:\n   - What is the total revenue generated over a specific period?\n   - Which store has the highest foot traffic and conversion rate?\n   - How do actual sales compare to planned sales amounts?\n   - Are there any products with low stock levels that need to be restocked?\n   - How are individual employees performing against their monthly sales targets?\n\n5. DATA INSIGHTS:\n   - The database includes temporal tracking columns like `date`, `last_updated_date`, `hire_date`, and `restock_date`, allowing for historical analysis and tracking changes over time.\n   - The presence of fiscal-related columns (`fiscal_week`, `fiscal_month`, `fiscal_year`, `fiscal_period`) suggests that the business operates on a fiscal calendar, which can be useful for financial reporting and planning.\n   - The use of unique identifiers (`product_id`, `employee_id`, `store_id`) ensures data integrity and facilitates data relationships across different tables.",
+      "business_context": "",
+      "database_type": "mssql",
+      "generated_at": "2025-11-18T08:01:58.383181",
+      "relationships": [],
+      "tables": [
+        {
+          "columns": [
+            {
+              "inferred_purpose": "Date information",
+              "name": "date",
+              "sample_values": [
+                "2023-01-01",
+                "2023-01-02",
+                "2023-01-03"
+              ],
+              "type": "date"
+            },
+            {
+              "inferred_purpose": "Numerical values",
+              "name": "gregorian_week",
+              "sample_values": [
+                "1",
+                "1",
+                "1"
+              ],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Numerical values",
+              "name": "gregorian_month",
+              "sample_values": [
+                "1",
+                "1",
+                "1"
+              ],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Date/time information",
+              "name": "gregorian_year",
+              "sample_values": [
+                "2023",
+                "2023",
+                "2023"
+              ],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Unique values",
+              "name": "day_of_week",
+              "sample_values": [
+                "Sunday",
+                "Monday",
+                "Tuesday"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Numerical values",
+              "name": "fiscal_week",
+              "sample_values": [
+                "41",
+                "41",
+                "41"
+              ],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Numerical values",
+              "name": "fiscal_month",
+              "sample_values": [
+                "10",
+                "10",
+                "10"
+              ],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Date/time information",
+              "name": "fiscal_year",
+              "sample_values": [
+                "2022",
+                "2022",
+                "2022"
+              ],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "is_holiday",
+              "sample_values": [
+                "Yes",
+                "No",
+                "No"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "holiday_name",
+              "sample_values": [
+                "New Year",
+                "NA",
+                "NA"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Boolean flags",
+              "name": "is_weekend",
+              "sample_values": [
+                "Yes",
+                "No",
+                "No"
+              ],
+              "type": "nvarchar(50)"
+            }
+          ],
+          "description": "Table TS.calendar_master with is_holiday as identifier and columns like date, gregorian_week, gregorian_month",
+          "estimated_purpose": "Data relationships, Temporal tracking",
+          "sample_row_count": 5,
+          "table_name": "TS.calendar_master"
+        },
+        {
+          "columns": [
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "product_id",
+              "sample_values": [
+                "P0001",
+                "P0002",
+                "P0003"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Monetary value",
+              "name": "cost_price",
+              "sample_values": [
+                "730.5700073242188",
+                "250.61000061035156",
+                "202.91000366210938"
+              ],
+              "type": "float"
+            },
+            {
+              "inferred_purpose": "Name or title",
+              "name": "supplier_name",
+              "sample_values": [
+                "Quality Merchants",
+                "TechDistributor Ltd",
+                "Kitchen Wholesale"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Date information",
+              "name": "last_updated_date",
+              "sample_values": [
+                "2023-01-17",
+                "2025-12-10",
+                "2023-03-18"
+              ],
+              "type": "date"
+            }
+          ],
+          "description": "Table TS.cost_of_products with product_id as identifier and columns like cost_price, supplier_name, last_updated_date",
+          "estimated_purpose": "Data relationships, Financial data, Temporal tracking",
+          "sample_row_count": 5,
+          "table_name": "TS.cost_of_products"
+        },
+        {
+          "columns": [
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "employee_id",
+              "sample_values": [
+                "E0001",
+                "E0002",
+                "E0003"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Name or title",
+              "name": "employee_name",
+              "sample_values": [
+                "Michael Jones",
+                "Sandra Sanchez",
+                "Mary Hernandez"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "store_id",
+              "sample_values": [
+                "S009",
+                "S009",
+                "S007"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Role or permission level",
+              "name": "role",
+              "sample_values": [
+                "Department Manager",
+                "Assistant Manager",
+                "Cashier"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Date/time information",
+              "name": "monthly_sales_target",
+              "sample_values": [
+                "90000",
+                "120000",
+                "35000"
+              ],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Date information",
+              "name": "hire_date",
+              "sample_values": [
+                "2020-03-27",
+                "2023-02-01",
+                "2019-09-16"
+              ],
+              "type": "date"
+            }
+          ],
+          "description": "Table TS.employee_data with employee_id as identifier and columns like employee_name, role, monthly_sales_target",
+          "estimated_purpose": "Data relationships, Temporal tracking",
+          "sample_row_count": 5,
+          "table_name": "TS.employee_data"
+        },
+        {
+          "columns": [
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "inventory_id",
+              "sample_values": [
+                "INV00001",
+                "INV00002",
+                "INV00003"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "product_id",
+              "sample_values": [
+                "P0001",
+                "P0001",
+                "P0001"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "store_id",
+              "sample_values": [
+                "S001",
+                "S002",
+                "S003"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Numerical values",
+              "name": "current_stock",
+              "sample_values": [
+                "80",
+                "163",
+                "176"
+              ],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Date information",
+              "name": "restock_date",
+              "sample_values": [
+                "2024-05-01",
+                "2024-06-28",
+                "2025-02-12"
+              ],
+              "type": "date"
+            },
+            {
+              "inferred_purpose": "Numerical values",
+              "name": "min_stock_threshold",
+              "sample_values": [
+                "15",
+                "15",
+                "15"
+              ],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Date/time information",
+              "name": "max_stock_threshold",
+              "sample_values": [
+                "200",
+                "200",
+                "200"
+              ],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Date information",
+              "name": "last_updated_date",
+              "sample_values": [
+                "2025-02-14",
+                "2025-06-03",
+                "2025-10-09"
+              ],
+              "type": "date"
+            }
+          ],
+          "description": "Table TS.Inventory with inventory_id as identifier and columns like current_stock, restock_date, min_stock_threshold",
+          "estimated_purpose": "Data relationships, Temporal tracking",
+          "sample_row_count": 5,
+          "table_name": "TS.Inventory"
+        },
+        {
+          "columns": [
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "store_id",
+              "sample_values": [
+                "S001",
+                "S002",
+                "S003"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Name or title",
+              "name": "store_name",
+              "sample_values": [
+                "Downtown Flagship",
+                "Westside Mall",
+                "Central Plaza"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Physical address",
+              "name": "address",
+              "sample_values": [
+                "123 Main St",
+                "456 West Ave",
+                "789 Center Rd"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Unique values",
+              "name": "city",
+              "sample_values": [
+                "New York",
+                "Los Angeles",
+                "Chicago"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Unique values",
+              "name": "state",
+              "sample_values": [
+                "NY",
+                "CA",
+                "IL"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Textual data",
+              "name": "country",
+              "sample_values": [
+                "USA",
+                "USA",
+                "USA"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Unique values",
+              "name": "opening_hours",
+              "sample_values": [
+                "9:00 AM - 9:00 PM",
+                "10:00 AM - 10:00 PM",
+                "9:00 AM - 8:00 PM"
+              ],
+              "type": "nvarchar(50)"
+            }
+          ],
+          "description": "Table TS.location_master with store_id as identifier and columns like store_name, address, city",
+          "estimated_purpose": "Contact information, Data relationships",
+          "sample_row_count": 5,
+          "table_name": "TS.location_master"
+        },
+        {
+          "columns": [
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "plan_id",
+              "sample_values": [
+                "PLN00001",
+                "PLN00002",
+                "PLN00003"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "product_id",
+              "sample_values": [
+                "P0001",
+                "P0001",
+                "P0001"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "store_id",
+              "sample_values": [
+                "S001",
+                "S001",
+                "S001"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Numerical quantity",
+              "name": "planned_sales_amount",
+              "sample_values": [
+                "8136.0",
+                "26994.0",
+                "26894.0"
+              ],
+              "type": "float"
+            },
+            {
+              "inferred_purpose": "Numerical values",
+              "name": "planned_quantity",
+              "sample_values": [
+                "322",
+                "294",
+                "163"
+              ],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Date/time information",
+              "name": "period",
+              "sample_values": [
+                "Q1-2023",
+                "Q2-2023",
+                "Q3-2023"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Date/time information",
+              "name": "fiscal_period",
+              "sample_values": [
+                "FY2023-Q1",
+                "FY2023-Q2",
+                "FY2023-Q3"
+              ],
+              "type": "nvarchar(50)"
+            }
+          ],
+          "description": "Table TS.plan_sales_data with plan_id as identifier and columns like planned_sales_amount, planned_quantity, period",
+          "estimated_purpose": "Data relationships, Temporal tracking",
+          "sample_row_count": 5,
+          "table_name": "TS.plan_sales_data"
+        },
+        {
+          "columns": [
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "product_id",
+              "sample_values": [
+                "P0001",
+                "P0002",
+                "P0003"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Monetary value",
+              "name": "selling_price",
+              "sample_values": [
+                "1414.18994140625",
+                "360.4100036621094",
+                "337.17999267578125"
+              ],
+              "type": "float"
+            },
+            {
+              "inferred_purpose": "Numerical values",
+              "name": "discount_percentage",
+              "sample_values": [
+                "0",
+                "30",
+                "20"
+              ],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Date information",
+              "name": "effective_from_date",
+              "sample_values": [
+                "2023-01-01",
+                "2023-01-01",
+                "2023-01-01"
+              ],
+              "type": "date"
+            },
+            {
+              "inferred_purpose": "Date information",
+              "name": "effective_to_date",
+              "sample_values": [
+                "2025-12-31",
+                "2025-12-31",
+                "2025-12-31"
+              ],
+              "type": "date"
+            }
+          ],
+          "description": "Table TS.price_of_goods with product_id as identifier and columns like selling_price, discount_percentage, effective_from_date",
+          "estimated_purpose": "Data relationships, Financial data, Temporal tracking",
+          "sample_row_count": 5,
+          "table_name": "TS.price_of_goods"
+        },
+        {
+          "columns": [
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "product_id",
+              "sample_values": [
+                "P0001",
+                "P0002",
+                "P0003"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Name or title",
+              "name": "product_name",
+              "sample_values": [
+                "iPhone 14 Pro",
+                "Samsung Galaxy S23",
+                "Google Pixel 7"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Category classification",
+              "name": "category",
+              "sample_values": [
+                "Electronics",
+                "Electronics",
+                "Electronics"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Category classification",
+              "name": "subcategory",
+              "sample_values": [
+                "Smartphones",
+                "Smartphones",
+                "Smartphones"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Unique values",
+              "name": "size",
+              "sample_values": [
+                "M",
+                "XS",
+                "L"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Unique values",
+              "name": "color",
+              "sample_values": [
+                "White",
+                "Red",
+                "Blue"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Description or details",
+              "name": "description",
+              "sample_values": [
+                "Premium smartphones product with excellent quality",
+                "Premium smartphones product with excellent quality",
+                "Premium smartphones product with excellent quality"
+              ],
+              "type": "nvarchar(100)"
+            }
+          ],
+          "description": "Table TS.product_master with product_id as identifier and columns like product_name, category, subcategory",
+          "estimated_purpose": "Classification, Data relationships",
+          "sample_row_count": 5,
+          "table_name": "TS.product_master"
+        },
+        {
+          "columns": [
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "sale_id",
+              "sample_values": [
+                "SL000001",
+                "SL000002",
+                "SL000003"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "transaction_id",
+              "sample_values": [
+                "TXN00001",
+                "TXN00001",
+                "TXN00002"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "product_id",
+              "sample_values": [
+                "P0045",
+                "P0036",
+                "P0018"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "store_id",
+              "sample_values": [
+                "S008",
+                "S008",
+                "S002"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "employee_id",
+              "sample_values": [
+                "E0021",
+                "E0015",
+                "E0043"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Numerical values",
+              "name": "quantity_sold",
+              "sample_values": [
+                "1",
+                "4",
+                "4"
+              ],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Date information",
+              "name": "sale_date",
+              "sample_values": [
+                "2023-01-01",
+                "2023-01-01",
+                "2023-01-01"
+              ],
+              "type": "date"
+            },
+            {
+              "inferred_purpose": "Time information",
+              "name": "sale_time",
+              "sample_values": [
+                "15:52:00",
+                "18:10:00",
+                "19:06:00"
+              ],
+              "type": "time"
+            },
+            {
+              "inferred_purpose": "Monetary value",
+              "name": "unit_price_at_sale",
+              "sample_values": [
+                "992.2999877929688",
+                "851.27001953125",
+                "1334.239990234375"
+              ],
+              "type": "float"
+            },
+            {
+              "inferred_purpose": "Total amount",
+              "name": "total_revenue",
+              "sample_values": [
+                "992.2999877929688",
+                "3405.080078125",
+                "5336.9599609375"
+              ],
+              "type": "float"
+            }
+          ],
+          "description": "Table TS.sales with sale_id as identifier and columns like quantity_sold, sale_date, sale_time",
+          "estimated_purpose": "Data relationships, Financial data, Temporal tracking",
+          "sample_row_count": 5,
+          "table_name": "TS.sales"
+        },
+        {
+          "columns": [
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "traffic_id",
+              "sample_values": [
+                "TRF00001",
+                "TRF00002",
+                "TRF00003"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Unique identifier",
+              "name": "store_id",
+              "sample_values": [
+                "S001",
+                "S002",
+                "S003"
+              ],
+              "type": "nvarchar(50)"
+            },
+            {
+              "inferred_purpose": "Date information",
+              "name": "visit_date",
+              "sample_values": [
+                "2023-01-01",
+                "2023-01-01",
+                "2023-01-01"
+              ],
+              "type": "date"
+            },
+            {
+              "inferred_purpose": "Numerical values",
+              "name": "foot_traffic_count",
+              "sample_values": [
+                "1134",
+                "2064",
+                "1028"
+              ],
+              "type": "int"
+            },
+            {
+              "inferred_purpose": "Date/time information",
+              "name": "conversion_rate",
+              "sample_values": [
+                "0.12999999523162842",
+                "0.2199999988079071",
+                "0.11999999731779099"
+              ],
+              "type": "float"
+            }
+          ],
+          "description": "Table TS.store_traffic with traffic_id as identifier and columns like visit_date, foot_traffic_count, conversion_rate",
+          "estimated_purpose": "Data relationships, Temporal tracking",
+          "sample_row_count": 5,
+          "table_name": "TS.store_traffic"
+        }
+      ]
+    },
+    "created_at": "2025-11-18T13:02:44.917Z"
+  }
+]

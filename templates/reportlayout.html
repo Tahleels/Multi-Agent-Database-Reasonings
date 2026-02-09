@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Report - SSRS Style</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .report-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background: rgb(60, 106, 231);
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border: 1px solid #ddd;
+        }
+
+        .report-header {
+            background: linear-gradient(to bottom, #ffffff 0%, #f8f8f8 100%);
+            border-bottom: 2px solid #0066cc;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .report-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0066cc;
+            margin-bottom: 5px;
+        }
+
+        .report-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .report-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #888;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        .filters-section {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .filters-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .export-btn {
+            padding: 5px 12px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            font-size: 11px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .export-btn:hover {
+            background: #0052a3;
+        }
+
+        .report-content {
+            padding: 0;
+        }
+
+        .summary-section {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .summary-item {
+            background: white;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+            text-align: center;
+        }
+
+        .summary-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0066cc;
+            margin-bottom: 3px;
+        }
+
+        .summary-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .data-table-container {
+            overflow-x: auto;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            background: white;
+        }
+
+        .data-table th {
+            background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+            border: 1px solid #dee2e6;
+            padding: 8px 12px;
+            text-align: left;
+            font-weight: bold;
+            color: #495057;
+            position: sticky;
+            top: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .data-table th:hover {
+            background: linear-gradient(to bottom, #e9ecef 0%, #d6d8db 100%);
+        }
+
+        .data-table th.sortable::after {
+            content: ' ↕';
+            color: #adb5bd;
+            font-size: 10px;
+        }
+
+        .data-table th.sort-asc::after {
+            content: ' ↑';
+            color: #0066cc;
+        }
+
+        .data-table th.sort-desc::after {
+            content: ' ↓';
+            color: #0066cc;
+        }
+
+        .data-table td {
+            border: 1px solid #dee2e6;
+            padding: 6px 12px;
+            background: white;
+        }
+
+        .data-table tr:nth-child(even) td {
+            background: #f8f9fa;
+        }
+
+        .data-table tr:hover td {
+            background: #e7f3ff;
+        }
+
+        .numeric {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+        }
+
+        .currency {
+            color: #0066cc;
+            font-weight: 500;
+        }
+
+        .group-header {
+            background: #e9ecef !important;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .group-total {
+            background: #d1ecf1 !important;
+            font-weight: bold;
+            color: #0c5460;
+        }
+
+        .grand-total {
+            background: #c3e6cb !important;
+            font-weight: bold;
+            color: #155724;
+            font-size: 13px;
+        }
+
+        .report-footer {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            text-align: center;
+            font-size: 11px;
+            color: #6c757d;
+        }
+
+        .page-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .page-btn {
+            padding: 3px 8px;
+            border: 1px solid #dee2e6;
+            background: white;
+            cursor: pointer;
+            font-size: 11px;
+            border-radius: 2px;
+        }
+
+        .page-btn:hover {
+            background: #e9ecef;
+        }
+
+        .page-btn.active {
+            background: #0066cc;
+            color: white;
+            border-color: #0066cc;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        @media print {
+            .filters-section,
+            .export-buttons,
+            .pagination {
+                display: none;
+            }
+            
+            .report-container {
+                box-shadow: none;
+                border: none;
+            }
+            
+            body {
+                background: rgb(66, 99, 209);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .report-container {
+                margin: 10px;
+            }
+            
+            .filter-controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .data-table {
+                font-size: 11px;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 4px 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <!-- Report Header -->
+        <div class="report-header">
+            <div class="report-title" id="reportTitle">Data Report</div>
+            <div class="report-subtitle" id="reportSubtitle">Generated Report</div>
+            <div class="report-info">
+                <span>Report Generated: <span id="reportDate"></span></span>
+                <span>Data Source: Application Database</span>
+                <span>Version: 1.0</span>
+            </div>
+        </div>
+
+        <!-- Export Options Section -->
+        <div class="filters-section">
+            <div class="filters-title">Export Options</div>
+            <div class="filter-controls">
+                <div class="export-buttons">
+                    <button class="export-btn" onclick="exportToPDF()">📄 PDF</button>
+                    <button class="export-btn" onclick="exportToExcel()">📊 Excel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Section -->
+        <div class="summary-section">
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-value" id="totalRecords">0</div>
+                    <div class="summary-label">Total Records</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value" id="numericColumnsSummary">
+                        <!-- Dynamic numeric columns summary will be inserted here -->
+                    </div>
+                    <div class="summary-label">Data Summary</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value" id="uniqueValues">0</div>
+                    <div class="summary-label">Unique Values</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="report-content">
+            <div class="data-table-container">
+                <table class="data-table" id="reportTable">
+                    <thead id="tableHeaders">
+                        <!-- Dynamic table headers will be inserted here -->
+                    </thead>
+                    <tbody id="reportTableBody">
+                        <tr>
+                            <td colspan="100" class="loading">Loading report data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Report Footer -->
+        <div class="report-footer">
+            <div class="page-info">
+                <span>Showing <span id="recordsShowing">0</span> of <span id="totalRecordsFooter">0</span> records</span>
+                <div class="pagination">
+                    <button class="page-btn" id="prevPageBtn">‹ Previous</button>
+                    <span id="pageNumbers"></span>
+                    <button class="page-btn" id="nextPageBtn">Next ›</button>
+                </div>
+                <span>Page <span id="currentPage">1</span> of <span id="totalPages">1</span></span>
+            </div>
+        </div>
+    </div>
+    <script>
+    window.addEventListener("message", function(event) {
+        if (!event.data || event.data.type !== "reportData") return;
+
+        console.log("📄 Report data received:", event.data);
+
+        if (!window.reportManager) {
+            window.reportManager = new ReportManager();
+        }
+
+        // Set header config only
+        window.reportManager.currentConfig = event.data.config || {};
+
+        // ALWAYS use columns + rows sent by parent
+        window.reportManager.currentData = {
+            columns: event.data.columns || [],
+            rows: event.data.rows || []
+        };
+
+        // Keep a copy for Excel export
+        window.fullReportData = {
+            columns: event.data.columns || [],
+            rows: event.data.rows || []
+        };
+
+        window.reportManager.filteredData = [...window.reportManager.currentData.rows];
+
+        window.reportManager.renderReport();
+        window.reportManager.setupEventListeners();
+    });
+    </script>
+
+
+    <script src="/static/reports.js"></script>
+</body>
+</html>

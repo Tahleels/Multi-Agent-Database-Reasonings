@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}BI Agents - AI BI Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Agents List Section -->
+<div id="biAgentsSection">
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="mb-0"><i class="fas fa-chart-bar me-2"></i>BI Agents</h2>
+            <p class="text-muted mb-0">Manage your Business Intelligence agents</p>
+        </div>
+        <button class="btn btn-primary" onclick="showCreateAgentModal()">
+            <i class="fas fa-plus me-2"></i>Create BI Agent
+        </button>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Agent Name</th>
+                    <th>Description</th>
+                    <th>Database Connection</th>
+                    <th>Tables</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="agents-tbody">
+                <!-- Populate your agents here with buttons for chat -->
+                <!-- Example chat button -->
+                <tr>
+                    <td>Sample BI Agent</td>
+                    <td>Sample Description</td>
+                    <td>Test Connection</td>
+                    <td>5 tables</td>
+                    <td>2025-11-19</td>
+                    <td>
+                        <button class="btn btn-primary agent-chat-btn" data-agent-name="Sample BI Agent">
+                            <i class="fas fa-comments"></i>
+                        </button>
+                        <button class="btn btn-danger">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Inline Chat Panel Container (hidden initially) -->
+<div id="chatPanelContainer" style="display:none; width:100%; min-height:75vh;"></div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function bindChatButtonEvents() {
+        setTimeout(() => {
+            document.querySelectorAll('.agent-chat-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const agentName = btn.getAttribute('data-agent-name');
+                    showAgentChat(agentName);
+                };
+            });
+        }, 100);
+    }
+
+    function showAgentChat(agentName) {
+        document.getElementById('biAgentsSection').style.display = 'none';
+
+        const container = document.getElementById('chatPanelContainer');
+        container.innerHTML = `
+        <div style="max-width:900px; margin:1.75rem auto; border:1px solid #dee2e6; background:#fff;
+          border-radius:8px; min-height:75vh; padding:1rem; display:flex; flex-direction:column;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>BI Agent: ${agentName}</h4>
+                <button class="btn btn-outline-secondary btn-sm" onclick="closeAgentChat()">Close</button>
+            </div>
+            <div id="chatMessages" style="flex-grow:1; overflow-y:auto; border:1px solid #dee2e6;
+          border-radius:6px; padding:1rem; margin-bottom:1rem; min-height:250px;">
+                <div class="alert alert-info"><small>Ask natural language questions about your data.</small></div>
+            </div>
+            <div class="input-group">
+                <button class="btn btn-outline-secondary" type="button" id="speechBtn"><i class="fas fa-microphone"></i></button>
+                <button class="btn btn-outline-secondary" type="button" id="webSearchBtn"><i class="fas fa-search"></i></button>
+                <input type="text" class="form-control" id="chatInput" placeholder="Ask a question about your data...">
+                <div class="input-group-append dropup">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                        id="modalToolsDropdown" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-tools"></i></button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" data-action="generate-infographic"><i class="fas fa-chart-pie me-2"></i>Generate Infographic</a></li>
+                        <li><a class="dropdown-item" data-action="generate-dashboard"><i class="fas fa-tachometer-alt me-2"></i>Generate Dashboard</a></li>
+                        <li><a class="dropdown-item" data-action="generate-report"><i class="fas fa-file-alt me-2"></i>Generate Report</a></li>
+                    </ul>
+                    <button class="btn btn-primary" id="sendChatMessageBtn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+            <small id="speechTranscript" class="text-muted mt-1"></small>
+            <div class="d-flex align-items-center mt-3">
+                <button class="btn btn-outline-danger btn-sm me-2" id="clearChatBtn"><i class="fas fa-trash"></i> Clear Chat</button>
+            </div>
+        </div>
+    `;
+        container.style.display = 'block';
+
+        // Initialize Bootstrap dropdown triggers dynamically
+        let dropdownTriggerList = [].slice.call(container.querySelectorAll('.dropdown-toggle'));
+        dropdownTriggerList.map(dropdownToggleEl => new bootstrap.Dropdown(dropdownToggleEl));
+
+        // Attach dropdown action event listeners
+        container.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', e => {
+                const action = e.target.dataset.action;
+                if (action === 'generate-dashboard') generateDashboard();
+                else if (action === 'generate-report') generateReport();
+                else if (action === 'generate-infographic') generateInfographic();
+            });
+        });
+    }
+
+    function closeAgentChat() {
+        const container = document.getElementById('chatPanelContainer');
+        container.style.display = 'none';
+        container.innerHTML = '';
+        document.getElementById('biAgentsSection').style.display = 'block';
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        bindChatButtonEvents();
+    });
+</script>
+{% endblock %}
