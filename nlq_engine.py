@@ -16,7 +16,10 @@ from sqlalchemy import create_engine
 try:
     from langchain_community.utilities import SQLDatabase
     from langchain_openai import ChatOpenAI
-    from langchain.chains import create_sql_query_chain
+    try:
+        from langchain.chains import create_sql_query_chain
+    except ImportError:
+        from langchain_classic.chains import create_sql_query_chain
     HAS_SQL_CHAIN = True
     print("✅ SQL chain imports available")
 except ImportError as e:
