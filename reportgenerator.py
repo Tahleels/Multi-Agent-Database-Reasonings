@@ -9,9 +9,10 @@ load_dotenv()
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
 if not ANTHROPIC_API_KEY:
-    raise ValueError("ANTHROPIC_API_KEY not found in environment variables. Please set it in a .env file.")
-
-client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    print("⚠️ WARNING: ANTHROPIC_API_KEY not found in environment variables. LLM-based report generation will be disabled.")
+    client = None
+else:
+    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
 def get_report_json_structure():
     """Returns the template JSON structure the LLM needs to fill for SSRS-style reports."""
@@ -71,6 +72,10 @@ def generate_report_config(df: pd.DataFrame):
         "filters": filters,
         "tables": [table]
     }
+
+    if client is None:
+        print("⚠️ ANTHROPIC_API_KEY missing. Returning default report config without LLM.")
+        return report_config
 
     # --- Optional: LLM-based enhancement ---
     try:

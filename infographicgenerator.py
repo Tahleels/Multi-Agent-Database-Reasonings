@@ -16,12 +16,14 @@ class InfographicGenerator:
     def __init__(self):
         self.api_key = os.getenv("ANTHROPIC_API_KEY")
         if not self.api_key:
-            raise ValueError("Missing ANTHROPIC_API_KEY")
-        self.llm = ChatAnthropic(
-            model="claude-sonnet-4-20250514",
-            temperature=0.1,
-            anthropic_api_key=self.api_key,
-        )
+            print("⚠️ WARNING: Missing ANTHROPIC_API_KEY. Infographic LLM generation will be disabled.")
+            self.llm = None
+        else:
+            self.llm = ChatAnthropic(
+                model="claude-sonnet-4-20250514",
+                temperature=0.1,
+                anthropic_api_key=self.api_key,
+            )
         self.system_prompt = self._get_system_prompt()
  
     def _get_system_prompt(self) -> str:
@@ -87,6 +89,35 @@ class InfographicGenerator:
         summary = "\n".join(summary_points)
 
         logger.info("Generating infographic plan for summary...")
+
+        if self.llm is None:
+            logger.info("No LLM available; returning fallback infographic layout.")
+            final_infographic = {
+                "title": "Fallback Infographic",
+                "subtitle": "Generated without Anthropic API key",
+                "generated_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                "widgets": [
+                    cs.build_summary_widget(auto_summary)
+                ]
+            }
+
+            # Add a simple numeric chart widget when possible
+            numeric_cols = [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c])]
+            if len(df.columns) >= 1 and numeric_cols:
+                label_col = df.columns[0]
+                value_col = numeric_cols[0]
+                labels = df[label_col].astype(str).tolist()[:10]
+                values = df[value_col].tolist()[:10]
+                final_infographic["widgets"].append(
+                    cs.build_chart_widget(
+                        chart_type="bar",
+                        title=f"{value_col} by {label_col}",
+                        labels=labels,
+                        datasets=[{"label": value_col, "data": values}]
+                    )
+                )
+
+            return final_infographic
 
         # ---------------------------------------------------------
         # ⭐ DO NOT TOUCH BELOW — your original logic stays same

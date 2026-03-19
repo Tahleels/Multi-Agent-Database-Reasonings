@@ -9,9 +9,10 @@ load_dotenv()
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
 if not ANTHROPIC_API_KEY:
-    raise ValueError("ANTHROPIC_API_KEY not found in environment variables. Please set it in a .env file.")
-
-client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    print("⚠️ WARNING: ANTHROPIC_API_KEY not found in environment variables. LLM-based dashboard generation will be disabled.")
+    client = None
+else:
+    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
 # --- LLM Logic to Generate Dashboard JSON ---
 def get_dashboard_json_structure():
@@ -77,6 +78,48 @@ def get_dashboard_json_structure():
 
 def generate_dashboard_config(df: pd.DataFrame):
     """Uses an LLM to analyze a DataFrame and generate a JSON config for the dashboard."""
+
+    if client is None:
+        # Fallback local dashboard config if Anthropic key is missing
+        print("⚠️ ANTHROPIC_API_KEY missing. Returning fallback dashboard config.")
+        filters = []
+        for col in df.columns:
+            if df[col].dtype == 'object' or df[col].nunique() < 20:
+                filters.append({
+                    "id": f"filter-{col}",
+                    "label": col,
+                    "column_name": col,
+                    "options": df[col].dropna().unique().tolist()
+                })
+        filters = filters[:2]
+
+        kpi_cards = []
+        numeric_cols = [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c])]
+        for i, col in enumerate(numeric_cols[:4], start=1):
+            kpi_cards.append({
+                "id": f"kpi{i}",
+                "label": f"{col} summary",
+                "calculation": "SUM",
+                "column_name": col,
+                "prefix": "" if df[col].dtype != 'float' else ""
+            })
+
+        chart_items = []
+        if len(df.columns) >= 2:
+            chart_items.append({
+                "chart_id": "chart1",
+                "title": "Fallback chart",
+                "type": "bar",
+                "data": {"label_column": df.columns[0], "value_column": df.columns[1], "dataset_label": "Fallback"}
+            })
+
+        return {
+            "header": {"title": "Fallback Dashboard", "subtitle": "No LLM key; basic layout generated."},
+            "filters": filters,
+            "kpi_cards": kpi_cards,
+            "charts": chart_items
+        }
+
     data_sample_csv = df.head(20).to_csv(index=False)
     column_info = "\n".join([f"- {col} ({dtype})" for col, dtype in df.dtypes.items()])
     json_structure = get_dashboard_json_structure()
